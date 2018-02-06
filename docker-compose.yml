@@ -1,0 +1,42 @@
+version: "3.4"
+services:
+  hub:
+    image: hub:latest
+    deploy:
+      replicas: 1
+    networks:
+      - "jupyterhub-network"
+    environment:
+      # All containers will join this network
+      - DOCKER_NETWORK_NAME=jupyterhub-network
+      - JUPYTERHUB_ADMIN=jhibba
+      - JUPYTERHUB_NETWORK=jupyterhub-network
+      - JUPYTERHUB_CONNECT_IP=hub
+      - JUPYTERHUB_LDAP=YOUR_LDAP_URL
+      - JUPYTERHUB_DOCKER_IMAGES={"Spark":"jupyter/all-spark-notebook:latest", "Tensorflow":"jupyter/tensorflow-notebook:latest"}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 8000
+        published: 8008
+        protocol: tcp
+        mode: host
+    configs:
+      - source: jupyterhub-config
+        target: /srv/jupyterhub/jupyterhub_config.py
+    command: "jupyterhub"
+configs:
+  jupyterhub-config:
+    external: true
+networks:
+  jupyterhub-network:
+    external: true
+
